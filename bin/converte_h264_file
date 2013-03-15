@@ -1,0 +1,20 @@
+#!/bin/bash
+
+if [ $# -ne 3 ]
+then
+	echo "Usage: $0 input output(without extension) mobile-version(1=yes,0=no)"
+	exit
+fi
+
+#carregando parametros de codificacao:
+. ~/conf.d/converte.conf
+
+if [ $3 -eq 0 ]
+then
+	mencoder "$1" -vf harddup ${H264}1:turbo -o /dev/null
+	mencoder "$1" -vf harddup ${H264}2 -o "${2}.avi"
+	mencoder "${2}.avi" -of lavf -lavfopts format=mp4 -ovc copy -oac copy -o "${2}.mp4"
+	rm -fv "${2}.avi"
+else
+	mencoder "$1" -of lavf -lavfopts format=ipod ${H264_MOBILE} -o "${2}-mobile.mp4"
+fi

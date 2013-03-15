@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ $# -ne 5 ]
+then
+	echo "Usage: $0 input title sid aid output(without extension)"
+	exit
+fi
+
+#carregando parametros de codificacao:
+. ~/conf.d/converte.conf
+
+mencoder -dvd-device "$1" dvd://$2 -sid $3 -aid $4 -vf pp=lb,harddup ${DIVX}1 -o /dev/null
+mencoder -dvd-device "$1" dvd://$2 -sid $4 -aid $4 -vf pp=lb,harddup ${DIVX}2 -o "${5}.avi"

@@ -1,0 +1,79 @@
+#!/bin/bash
+
+if [ $# -ne 2 ]
+then
+	echo "Usage: $0 input in-type(iso=1,video=2)"
+	exit
+fi
+
+if [ $2 -eq 1 ]
+then
+	mplayer -dvd-device "$1" dvd:// -identify -endpos 1 > info.log
+else
+	mplayer "$1" -identify -endpos 1 > info.log
+fi
+
+#FPS info:
+grep ID_VIDEO_FPS info.log > fps.log
+sed -i 's/ID_VIDEO_FPS\=//g' fps.log
+
+if [ $2 -eq 1 ]
+then
+	#SID info:
+	grep ID_SID_ info.log > sid1.log
+	grep pt sid1.log > sid.log
+	sed -i 's/ID_SID_//g' sid.log
+	sed -i 's/_LANG\=pt//g' sid.log
+	rm sid1.log
+	num_subtitles=`wc -l sid.log`
+	num_subtitles=${num_subtitles%% *}
+	if [ ${num_subtitles} -eq 0 ]
+	then
+		echo ${num_subtitles} > sid.log
+	fi
+
+	#AID info:
+	grep ID_AID_ info.log > aid1.log
+	grep en aid1.log > aid.log
+	sed -i 's/ID_AID_//g' aid.log
+	sed -i 's/_LANG\=en//g' aid.log
+	rm aid1.log
+	num_audios=`wc -l aid.log`
+	num_audios=${num_audios%% *}
+	if [ ${num_audios} -ge 2 ]
+	then
+		audios=`cat aid.log`
+		for audio_id in $audios
+		do
+			if grep aid:\ ${audio_id} info.log | grep stereo
+			then
+				echo ${audio_id} > aid.log
+			fi
+		done
+	fi
+
+	#TITLE info:
+	grep ID_DVD_TITLE_ info.log > title1.log
+	grep _LENGTH title1.log > title.log
+	sed -i 's/ID_DVD_TITLE_//g' title.log
+	sed -i 's/_LENGTH\=/\ /g' title.log
+	wc -l title.log > title_numlinhas.log
+	sed -i 's/\ title.log//g' title_numlinhas.log
+	num_linhas=`cat title_numlinhas.log`
+	linha=1
+	tamanho_titulo=0;
+	while [ ${linha} -le ${num_linhas} ]
+	do
+		linha_conteudo=`sed -n ${linha}p title.log`
+		duracao_titulo_atual=${linha_conteudo#* }
+		duracao_titulo_atual=${duracao_titulo_atual%%.*}
+		if [ $tamanho_titulo -le $duracao_titulo_atual ]
+		then
+			tamanho_titulo=$duracao_titulo_atual
+			titulo=${linha_conteudo%% *}
+		fi
+		let linha++
+	done
+	echo $titulo > title.log
+	rm title1.log title_numlinhas.log
+fi
