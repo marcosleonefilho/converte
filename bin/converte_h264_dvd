@@ -7,7 +7,7 @@ then
 fi
 
 #carregando parametros de codificacao:
-. ~/conf.d/converte.conf
+. ~/converte/conf.d/converte.conf
 
 if [ $6 -eq 0 ]
 then                                                                                                                 
