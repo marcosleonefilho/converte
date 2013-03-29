@@ -1,13 +1,14 @@
 [Desktop Entry]
+Encoding=UTF-8
 Version=1.0
 Terminal=true
 Type=Application
 Name=Conversor
 Comment=Script conversor de vídeos
-Exec=~/converte/bin/batch_converte_divx.sh
+Exec=bash -c "~/converte/bin/batch_converte_divx.sh"
 Icon=script
 X-Ayatana-Desktop-Shortcuts=X-New
 [X-New Shortcut Group]
 Name=Nova Conversao
-Exec=~/converte/bin/batch_converte_divx.sh
+Exec=bash -c "~/converte/bin/batch_converte_divx.sh"
 TargetEnvironment=Unity
