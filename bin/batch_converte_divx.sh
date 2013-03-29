@@ -13,6 +13,5 @@ export PATH=${PATH}:${CONVERTE_FOLDER}
 cd ${ORIGEM_FOLDER}
 
 for file in * ; do
-    converte_videos.sh ${file} 2 ${DESTINO_FOLDER}/${file%%.*} 1 0
-    rm -fv ${file}
+    converte_videos.sh ${file} 2 ${DESTINO_FOLDER}/${file%%.*} 1 0 && rm -fv ${file}
 done
