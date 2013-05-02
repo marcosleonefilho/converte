@@ -10,4 +10,4 @@ source ~/.config/user-dirs.dirs
 #installing app:
 mkdir -p ${XDG_DESKTOP_DIR}/origem
 mkdir -p ${XDG_DESKTOP_DIR}/destino
-cp ~/converte/converte.desktop ${XDG_DESKTOP_DIR}/
+cp ~/converte/converte.desktop "${XDG_DESKTOP_DIR}/"
