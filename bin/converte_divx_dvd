@@ -9,5 +9,10 @@ fi
 #carregando parametros de codificacao:
 . ~/converte/conf.d/converte.conf
 
-mencoder -dvd-device "$1" dvd://$2 -sid $3 -aid $4 -vf pp=lb,harddup ${DIVX}1 -o /dev/null
-mencoder -dvd-device "$1" dvd://$2 -sid $4 -aid $4 -vf pp=lb,harddup ${DIVX}2 -o "${5}.avi"
+if [ $NUMPASSES -eq 2]
+then
+	mencoder -dvd-device "$1" dvd://$2 -sid $3 -aid $4 -vf pp=lb,harddup ${DIVX}1 -o /dev/null
+	mencoder -dvd-device "$1" dvd://$2 -sid $4 -aid $4 -vf pp=lb,harddup ${DIVX}2 -o "${5}.avi"
+else
+	mencoder -dvd-device "$1" dvd://$2 -sid $4 -aid $4 -vf pp=lb,harddup ${DIVX1} -o "${5}.avi"
+fi

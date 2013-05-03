@@ -10,11 +10,18 @@ fi
 . ~/converte/conf.d/converte.conf
 
 if [ $6 -eq 0 ]
-then                                                                                                                 
-	mencoder dvd://$2 -dvd-device "$1" -sid $3 -aid $4 -vf pp=lb,harddup ${H264}1:turbo -o /dev/null
-	mencoder dvd://$2 -dvd-device "$1" -sid $3 -aid $4 -vf pp=lb,harddup ${H264}2 -o "${5}.avi"
-	mencoder "${5}.avi" -of lavf -lavfopts format=mp4 -ovc copy -oac copy -o "${5}.mp4"
-	rm -fv "${5}.avi"
+then
+if [ $NUMPASSES -eq 2]
+	then
+		mencoder dvd://$2 -dvd-device "$1" -sid $3 -aid $4 -vf pp=lb,harddup ${H264}1:turbo -o /dev/null
+		mencoder dvd://$2 -dvd-device "$1" -sid $3 -aid $4 -vf pp=lb,harddup ${H264}2 -o "${5}.avi"
+		mencoder "${5}.avi" -of lavf -lavfopts format=mp4 -ovc copy -oac copy -o "${5}.mp4"
+		rm -fv "${5}.avi"
+	else
+		mencoder dvd://$2 -dvd-device "$1" -sid $3 -aid $4 -vf pp=lb,harddup ${H2641} -o "${5}.avi"
+		mencoder "${5}.avi" -of lavf -lavfopts format=mp4 -ovc copy -oac copy -o "${5}.mp4"
+		rm -fv "${5}.avi"
+	fi
 else
 	mencoder dvd://$2 -dvd-device "$1" -sid $3 -aid $4 -of lavf -lavfopts format=ipod ${H264_MOBILE} -o "${5}-mobile.mp4"
 fi

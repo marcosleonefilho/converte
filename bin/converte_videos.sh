@@ -48,7 +48,7 @@ then
 	then
 		#Para converter para DIVX a partir de um arquivo de video:
 		echo "Para o arquivo ${OUTPUT}.avi"
-		converte_divx_file "${INPUT}" "${OUTPUT}" 1
+		converte_divx_file "${INPUT}" "${OUTPUT}"
 	fi
 	if [ ${OUT_TYPE} -eq 2 ]
 	then

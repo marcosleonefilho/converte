@@ -1,15 +1,15 @@
 #!/bin/bash
 
-if [ $# -ne 3 ]
+if [ $# -ne 2 ]
 then
-	echo "Usage: $0 input output(without extension) number_of_passes"
+	echo "Usage: $0 input output(without extension)"
 	exit
 fi
 
 #carregando parametros de codificacao:
 . ~/converte/conf.d/converte.conf
 
-if [ $3 -eq 2]
+if [ $NUMPASSES -eq 2]
 then
 	mencoder "$1" -vf harddup ${DIVX}1 -o /dev/null
 	mencoder "$1" -vf harddup ${DIVX}2 -o "${2}.avi"
