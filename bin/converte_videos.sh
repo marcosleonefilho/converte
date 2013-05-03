@@ -29,13 +29,13 @@ then
 	then
 		#Para converter para DIVX a partir de uma imagem iso:
 		echo "Para o arquivo ${OUTPUT}.avi"
-		converte_divx_dvd ${INPUT} ${TITLE} ${SID} ${AID} ${OUTPUT}
+		converte_divx_dvd "${INPUT}" "${TITLE}" ${SID} ${AID} "${OUTPUT}"
 	fi
 	if [ ${OUT_TYPE} -eq 2 ]
 	then
 		#Para converter para H264 a partir de uma imagem iso:
 		echo "Para o arquivo ${OUTPUT}.mp4"
-		converte_h264_dvd ${INPUT} ${TITLE} ${SID} ${AID} ${OUTPUT} ${MOBILE}
+		converte_h264_dvd "${INPUT}" "${TITLE}" ${SID} ${AID} "${OUTPUT}" ${MOBILE}
 	fi
 fi
 # Fim  > 'Iniciando procedimento para compactar type=1 (imagem iso)'
@@ -54,7 +54,7 @@ then
 	then
 		#Para converter para H264 a partir de um arquivo de video:
 		echo "Para o arquivo ${OUTPUT}.mp4"
-		converte_h264_file ${INPUT} ${OUTPUT} ${MOBILE}
+		converte_h264_file "${INPUT}" "${OUTPUT}" ${MOBILE}
 	fi
 fi
 # Fim > 'Iniciando procedimento para compactar type=2 (arquivo video)'
