@@ -11,7 +11,7 @@ fi
 
 if [ $3 -eq 0 ]
 then
-	if [ $NUMPASSES -eq 2]
+	if [ "${NUMPASSES}" == "2" ]
 	then
 		mencoder "$1" -vf harddup ${H264}1:turbo -o /dev/null
 		mencoder "$1" -vf harddup ${H264}2 -o "${2}.avi"

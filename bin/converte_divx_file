@@ -9,7 +9,7 @@ fi
 #carregando parametros de codificacao:
 . ~/converte/conf.d/converte.conf
 
-if [ $NUMPASSES -eq 2]
+if [ "${NUMPASSES}" == "2" ]
 then
 	mencoder "$1" -vf harddup ${DIVX}1 -o /dev/null
 	mencoder "$1" -vf harddup ${DIVX}2 -o "${2}.avi"

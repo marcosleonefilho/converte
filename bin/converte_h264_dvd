@@ -11,7 +11,7 @@ fi
 
 if [ $6 -eq 0 ]
 then
-if [ $NUMPASSES -eq 2]
+if [ "${NUMPASSES}" == "2" ]
 	then
 		mencoder dvd://$2 -dvd-device "$1" -sid $3 -aid $4 -vf pp=lb,harddup ${H264}1:turbo -o /dev/null
 		mencoder dvd://$2 -dvd-device "$1" -sid $3 -aid $4 -vf pp=lb,harddup ${H264}2 -o "${5}.avi"
