@@ -13,7 +13,7 @@ OUT_TYPE=$4
 MOBILE=$5
 
 # Lendo parametros do video (tanto para iso como video):
-read_video_parm ${INPUT} ${IN_TYPE}
+read_video_parm "${INPUT}" ${IN_TYPE}
 FPS=`sed -n 1p fps.log`
 
 # Iniciando procedimento para compactar type=1 (imagem iso)
