@@ -1,0 +1,164 @@
+#!/bin/bash
+
+FFMPEG=`which ffmpeg`
+TSMUXER=`which tsMuxeR`
+MKUDFFS=`which mkudffs`
+
+function usage {
+	echo "The arguments to use are"
+	echo "-m: The movie file to encode (ffmpeg compatible)"
+	echo "-v: The h.264 video asset to mux for BD content"
+	echo "-a: The WAV audio asset to mux for BD content"
+	echo "-b: The bitrate for h.264 video encoding (-m), default is 25M"
+	exit
+}
+
+function test_ffmpeg_x264 {
+	# Test whether ffmpeg has libx264 support compiled in
+	if [ `ffmpeg -formats 2>/dev/null| grep x264 | cut -c 3-4` != "EV" ]; then
+		echo "FFMPEG not compiled with libx264 support." | exit
+	fi
+}
+
+function test_ffmpeg {
+	if [ ! -x $FFMPEG ]; then
+		echo 'Could not find FFMPEG in the path.  Try "sudo apt-get install ffmpeg".' | exit
+	fi
+}
+
+function test_tsmuxer {
+	if [ ! -x $TSMUXER ]; then
+		echo 'Could not find tsMuxeR in the path.  Download from http://www.smlabs.net/tsmuxer_en.html' | exit
+	fi
+}
+
+function test_mkudffs {
+	if [ ! -x $MKUDFFS ]; then
+		echo 'Could not find mkudffs in the path.  Try "sudo apt-get install udftools".' | exit
+	fi
+}
+
+function test_dependancies {
+	echo 'Verifying dependancies...'
+	test_ffmpeg
+	test_ffmpeg_x264
+	test_tsmuxer
+	test_mkudffs
+}
+
+function make_bluray_streams {
+	#convert the movie to HQ H.264 and WAV
+	echo "Encoding ${MOVIE} video to H.264, 1920x1080, ${BITRATE}bps - Pass 1"
+	$FFMPEG -i $MOVIE -s hd1080 -f rawvideo -an -pass 1 -vcodec libx264 -vpre slowfirstpass -b $BITRATE -bt $BITRATE -threads 0 -y /dev/null >>mkbdmovie.log 2>&1
+	echo "Encoding ${MOVIE} video to H.264, 1920x1080, ${BITRATE}bps - Pass 2"
+	$FFMPEG -i $MOVIE -s hd1080 -an -pass 2 -vcodec libx264 -vpre hq -b $BITRATE -bt $BITRATE -threads 0 $H264_FILE >>mkbdmovie.log 2>&1
+	echo "Encoding ${MOVIE} audio to PCM, 24bps, 48000 - Pass 1"
+	$FFMPEG -i $MOVIE -acodec pcm_s24le -ar 48000 $WAV_FILE >>mkbdmovie.log 2>&1
+}
+
+function mux_bluray_assets {
+	echo 'Muxing streams and generating BDMV file structure'
+	# create the metafile needed by tsMuxeR
+
+	echo "MUXOPT --no-pcr-on-video-pid --new-audio-pes --blu-ray --vbr  --custom-chapters=00:00:00.000;00:05:00.000;00:10:00.000;00:15:00.000;00:20:00.000;00:25:00.000 --split-size=2GB --vbv-len=500" > $TSMUXER_META
+	echo "V_MPEG4/ISO/AVC, \"$H264_FILE\", fps=23.976, insertSEI, contSPS, ar=As source" >> $TSMUXER_META
+	echo "A_LPCM, \"$WAV_FILE\", lang=eng" >> $TSMUXER_META
+
+	# mux the two files and generate the BR-structure
+	$TSMUXER $TSMUXER_META $BDMV_PATH >>mkbdmovie.log 2>&1
+}
+
+function create_udf_image {
+	echo "Creating UDF Image: ${UDF_IMAGE}"
+	# calculate the UDF size necessary (as 2k blocks) to fit the data
+	UDFSIZE=`du -s -B 2K $BDMV_PATH | cut -f 1`
+	UDFWORKSPACE=`mktemp -d /tmp/UDF_XXXXXXXXX`
+
+	# make the udf filesystem, and mount it
+	if [ -e $UDF_IMAGE ]
+	then
+		rm $UDF_IMAGE
+	fi
+
+	#MKUDFCMD="/usr/bin/mkudffs --vid=\"$3\" --media-type=hd --utf8 \"$2\" $UDFSIZE"
+	$MKUDFFS --media-type=hd --utf8 $UDF_IMAGE $UDFSIZE >>mkbdmovie.log 2>&1
+	sudo mount $UDF_IMAGE $UDFWORKSPACE -o loop >>mkbdmovie.log 2>&1
+
+	# Copy the source into the UDF Workspace
+	sudo cp -Rv $BDMV_PATH/* $UDFWORKSPACE >>mkbdmovie.log 2>&1
+
+	#unmount, cleanup
+	sudo umount $UDFWORKSPACE >>mkbdmovie.log 2>&1
+}
+
+function cleanup {
+	sudo rm -rf $UDFWORKSPACE $TSMUXER_META >>mkbdmovie.log 2>&1
+	if [ $TEMP_H264 = 1 ]; then
+		sudo rm -rf $H264_FILE >>mkbdmovie.log 2>&1
+	fi
+	if [ $TEMP_WAV = 1 ]; then
+		sudo rm -rf $WAV_FILE >>mkbdmovie.log 2>&1
+	fi
+}
+
+MUX_ONLY=1
+TEMP_H264=1
+TEMP_WAV=1
+BITRATE=25M
+
+TMP_FILE=`mktemp -u /tmp/BDMV_XXXXXXXXXX`
+TSMUXER_META=$TMP_FILE.meta
+BDMV_PATH=`mktemp -d /tmp/BDMV_XXXXXXXXXX`
+
+if [ $# -le 1 ]; then
+	echo "Invalid or insufficient parameters."
+	usage
+fi
+
+while [ $# -gt 1 ]
+do
+	case $1
+	in
+		-m)
+			MOVIE=$2
+			MUX_ONLY=0
+			H264_FILE=$TMP_FILE.h264
+			WAV_FILE=$TMP_FILE.wav
+			shift 2
+		;;
+
+		-b)
+			BITRATE=$2
+			shift 2
+		;;
+
+		-v)
+			H264_FILE=$2
+			TEMP_H264=0
+			shift 2
+			echo "Using h.264 file: ${H264_FILE}"
+		;;
+
+		-a)
+			WAV_FILE=$2
+			TEMP_WAV=0
+			shift 2
+			echo "Using WAV file: ${WAV_FILE}"
+		;;
+
+		*)
+			usage;
+		;;
+	esac
+done
+UDF_IMAGE=$1
+
+test_dependancies
+
+if [ $MUX_ONLY = 0 ]; then
+	make_bluray_streams
+fi
+
+mux_bluray_assets
+create_udf_image
+cleanup
