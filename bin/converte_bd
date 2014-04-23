@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# script grabbed from: http://irishjesus.wordpress.com/2010/10/17/blu-ray-movie-authoring-in-linux/
+# after running this script in the following manner:
+# /home/marcos/git/src/converte/bin/converte_bd -m /mnt/hdexterno/video/LedZeppelin/LZ-CD1080p.orig.mkv ledzep
+# to burn the bluray media, do the following:
+# format the disc: dvd+rw-format -ssa=default /dev/cdrom
+# burn the image: growisofs -dvd-compat -Z /dev/cdrom=ledzep.udf
+
 FFMPEG=`which ffmpeg`
 TSMUXER=`which tsMuxeR`
 MKUDFFS=`which mkudffs`
