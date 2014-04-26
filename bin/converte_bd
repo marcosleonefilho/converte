@@ -17,6 +17,7 @@ function usage {
 	echo "-v: The h.264 video asset to mux for BD content"
 	echo "-a: The WAV audio asset to mux for BD content"
 	echo "-b: The bitrate for h.264 video encoding (-m), default is 25M"
+	echo "-n: number of passes (default is 1)"
 	exit
 }
 
@@ -54,13 +55,21 @@ function test_dependancies {
 }
 
 function make_bluray_streams {
-	#convert the movie to HQ H.264 and WAV
-	echo "Encoding ${MOVIE} video to H.264, 1920x1080, ${BITRATE}bps - Pass 1"
-	$FFMPEG -i $MOVIE -s hd1080 -f rawvideo -an -pass 1 -vcodec libx264 -b $BITRATE -bt $BITRATE -threads 0 -y /dev/null >>mkbdmovie.log 2>&1
-	echo "Encoding ${MOVIE} video to H.264, 1920x1080, ${BITRATE}bps - Pass 2"
-	$FFMPEG -i $MOVIE -s hd1080 -an -pass 2 -vcodec libx264 -vpre hq -b $BITRATE -bt $BITRATE -threads 0 $H264_FILE >>mkbdmovie.log 2>&1
-	echo "Encoding ${MOVIE} audio to PCM, 24bps, 48000 - Pass 1"
-	$FFMPEG -i $MOVIE -acodec pcm_s24le -ar 48000 $WAV_FILE >>mkbdmovie.log 2>&1
+	if [ "${NUMPASSES}" == "2" ]
+		then
+		#convert the movie to HQ H.264 and WAV
+		echo "Encoding ${MOVIE} video to H.264, 1920x1080, ${BITRATE}bps - Pass 1"
+		$FFMPEG -i $MOVIE -s hd1080 -f rawvideo -an -pass 1 -vcodec libx264 -b $BITRATE -bt $BITRATE -threads 0 -y /dev/null >>mkbdmovie.log 2>&1
+		echo "Encoding ${MOVIE} video to H.264, 1920x1080, ${BITRATE}bps - Pass 2"
+		$FFMPEG -i $MOVIE -s hd1080 -an -pass 2 -vcodec libx264 -vpre hq -b $BITRATE -bt $BITRATE -threads 0 $H264_FILE >>mkbdmovie.log 2>&1
+		echo "Encoding ${MOVIE} audio to PCM, 24bps, 48000 - Pass 1"
+		$FFMPEG -i $MOVIE -acodec pcm_s24le -ar 48000 $WAV_FILE >>mkbdmovie.log 2>&1
+	else
+		echo "Encoding ${MOVIE} video to H.264, 1920x1080, ${BITRATE}bps"
+		$FFMPEG -i $MOVIE -s hd1080 -an -vcodec libx264 -vpre hq -b $BITRATE -bt $BITRATE -threads 0 $H264_FILE >>mkbdmovie.log 2>&1
+		echo "Encoding ${MOVIE} audio to PCM, 24bps, 48000"
+		$FFMPEG -i $MOVIE -acodec pcm_s24le -ar 48000 $WAV_FILE >>mkbdmovie.log 2>&1
+	fi
 }
 
 function mux_bluray_assets {
@@ -111,6 +120,7 @@ function cleanup {
 MUX_ONLY=1
 TEMP_H264=1
 TEMP_WAV=1
+NUMPASSES=1
 BITRATE=25M
 
 TMP_FILE=`mktemp -u /tmp/BDMV_XXXXXXXXXX`
@@ -151,6 +161,12 @@ do
 			TEMP_WAV=0
 			shift 2
 			echo "Using WAV file: ${WAV_FILE}"
+		;;
+
+		-n)
+			NUMPASSES=$2
+			shift 2
+			echo "Using the following number of passes: ${NUMPASSES}"
 		;;
 
 		*)
