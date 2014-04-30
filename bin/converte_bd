@@ -61,12 +61,12 @@ function make_bluray_streams {
 		echo "Encoding ${MOVIE} video to H.264, 1920x1080, ${BITRATE}bps - Pass 1"
 		$FFMPEG -i $MOVIE -s hd1080 -f rawvideo -an -pass 1 -vcodec libx264 -b $BITRATE -bt $BITRATE -threads 0 -y /dev/null >>mkbdmovie.log 2>&1
 		echo "Encoding ${MOVIE} video to H.264, 1920x1080, ${BITRATE}bps - Pass 2"
-		$FFMPEG -i $MOVIE -s hd1080 -an -pass 2 -vcodec libx264 -vpre hq -b $BITRATE -bt $BITRATE -threads 0 $H264_FILE >>mkbdmovie.log 2>&1
+		$FFMPEG -i $MOVIE -s hd1080 -an -pass 2 -vcodec libx264 -b $BITRATE -bt $BITRATE -threads 0 $H264_FILE >>mkbdmovie.log 2>&1
 		echo "Encoding ${MOVIE} audio to PCM, 24bps, 48000 - Pass 1"
 		$FFMPEG -i $MOVIE -acodec pcm_s24le -ar 48000 $WAV_FILE >>mkbdmovie.log 2>&1
 	else
 		echo "Encoding ${MOVIE} video to H.264, 1920x1080, ${BITRATE}bps"
-		$FFMPEG -i $MOVIE -s hd1080 -an -vcodec libx264 -vpre hq -b $BITRATE -bt $BITRATE -threads 0 $H264_FILE >>mkbdmovie.log 2>&1
+		$FFMPEG -i $MOVIE -s hd1080 -an -vcodec libx264 -b $BITRATE -bt $BITRATE -threads 0 $H264_FILE >>mkbdmovie.log 2>&1
 		echo "Encoding ${MOVIE} audio to PCM, 24bps, 48000"
 		$FFMPEG -i $MOVIE -acodec pcm_s24le -ar 48000 $WAV_FILE >>mkbdmovie.log 2>&1
 	fi
